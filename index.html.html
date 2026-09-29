@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="hu" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Személyes Fájlkezelő</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Ikonok -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col transition-colors duration-200">
+
+    <!-- Fejléc -->
+    <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
+                    <i class="fa-solid font-bold fa-cloud-arrow-up text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">Saját CloudVault</h1>
+                    <p class="text-xs text-slate-400">Gyors és biztonságos fájlkezelő</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <button id="themeToggle" class="p-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors" title="Téma váltása">
+                    <i class="fa-solid fa-moon text-lg dark:hidden"></i>
+                    <i class="fa-solid fa-sun text-lg hidden dark:block text-amber-400"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Fő tartalom -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-8">
+
+        <!-- Statisztika és Információs Kártyák -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4 flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-xl shrink-0">
+                    <i class="fa-solid fa-file font-bold"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Fájlok száma</p>
+                    <p id="statTotalFiles" class="text-2xl font-bold text-white mt-0.5">0 db</p>
+                </div>
+            </div>
+
+            <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4 flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xl shrink-0">
+                    <i class="fa-solid fa-hard-drive"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Összes Méret</p>
+                    <p id="statTotalSize" class="text-2xl font-bold text-white mt-0.5">0 B</p>
+                </div>
+            </div>
+
+            <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4 flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center text-xl shrink-0">
+                    <i class="fa-solid fa-image"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Média fájlok</p>
+                    <p id="statMediaCount" class="text-2xl font-bold text-white mt-0.5">0 db</p>
+                </div>
+            </div>
+
+            <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4 flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-xl shrink-0">
+                    <i class="fa-solid fa-file-lines"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Dokumentumok</p>
+                    <p id="statDocCount" class="text-2xl font-bold text-white mt-0.5">0 db</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Drag & Drop Feltöltő Zóna -->
+        <section class="bg-slate-800/40 border-2 border-dashed border-slate-700 hover:border-blue-500/70 transition-all rounded-2xl p-8 text-center relative group" id="dropZone">
+            <input type="file" id="fileInput" multiple class="hidden" />
+            <input type="file" id="folderInput" webkitdirectory directory multiple class="hidden" />
+
+            <div class="max-w-md mx-auto flex flex-col items-center gap-3">
+                <div class="w-16 h-16 rounded-full bg-blue-600/10 text-blue-500 flex items-center justify-center text-3xl group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-white">Húzd ide a fájlokat vagy mappát</h3>
+                    <p class="text-sm text-slate-400 mt-1">Bármilyen fájltípust feltölthetsz a háttértárról.</p>
+                </div>
+                <div class="flex flex-wrap items-center justify-center gap-3 mt-2">
+                    <button onclick="document.getElementById('fileInput').click()" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-medium text-sm transition-all shadow-lg shadow-blue-600/25 flex items-center gap-2">
+                        <i class="fa-solid fa-file-circle-plus"></i> Fájlok kiválasztása
+                    </button>
+                    <button onclick="document.getElementById('folderInput').click()" class="px-5 py-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium text-sm transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-folder-plus"></i> Mappa kiválasztása
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Feltöltési folyamatjelző konténer -->
+        <div id="progressContainer" class="hidden flex flex-col gap-3 bg-slate-800/80 border border-slate-700 rounded-2xl p-5 shadow-lg">
+            <div class="flex items-center justify-between">
+                <span class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                    <i class="fa-solid fa-spinner animate-spin text-blue-400"></i> Fájlok feldolgozása...
+                </span>
+                <span id="progressPercent" class="text-sm font-bold text-blue-400">0%</span>
+            </div>
+            <div class="w-full bg-slate-700 h-2.5 rounded-full overflow-hidden">
+                <div id="progressBar" class="bg-gradient-to-r from-blue-500 to-indigo-500 h-full w-0 transition-all duration-200"></div>
+            </div>
+        </div>
+
+        <!-- Szűrés és Keresés Bár -->
+        <section class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-slate-800/40 p-4 rounded-2xl border border-slate-800">
+            <!-- Keresés -->
+            <div class="relative flex-1">
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                <input type="text" id="searchInput" placeholder="Fájl keresése név alapján..." class="w-full pl-10 pr-4 py-2 bg-slate-900/80 border border-slate-700 rounded-xl text-sm focus:outline-none focus:border-blue-500 text-slate-200 placeholder-slate-500 transition-colors">
+            </div>
+
+            <!-- Kategóriák -->
+            <div class="flex items-center gap-1 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
+                <button data-category="all" class="category-btn active px-3.5 py-1.5 rounded-lg text-xs font-medium bg-blue-600 text-white whitespace-nowrap transition-colors">Összes</button>
+                <button data-category="image" class="category-btn px-3.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 whitespace-nowrap transition-colors">Képek</button>
+                <button data-category="doc" class="category-btn px-3.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 whitespace-nowrap transition-colors">Dokumentumok</button>
+                <button data-category="media" class="category-btn px-3.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 whitespace-nowrap transition-colors">Média</button>
+                <button data-category="other" class="category-btn px-3.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 whitespace-nowrap transition-colors">Egyéb</button>
+            </div>
+
+            <!-- Rendezés -->
+            <div class="flex items-center gap-2 shrink-0">
+                <label class="text-xs text-slate-400 whitespace-nowrap">Rendezés:</label>
+                <select id="sortSelect" class="bg-slate-900/80 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+                    <option value="date-desc">Legújabb elől</option>
+                    <option value="date-asc">Legrégebbi elől</option>
+                    <option value="name-asc">Név (A-Z)</option>
+                    <option value="name-desc">Név (Z-A)</option>
+                    <option value="size-desc">Méret (Nagy-Kicsi)</option>
+                    <option value="size-asc">Méret (Kicsi-Nagy)</option>
+                </select>
+            </div>
+        </section>
+
+        <!-- Fájllista Megjelenítő -->
+        <section>
+            <!-- Üres állapot üzenet -->
+            <div id="emptyState" class="py-16 text-center border border-dashed border-slate-800 rounded-2xl bg-slate-900/30">
+                <div class="w-16 h-16 mx-auto mb-3 rounded-full bg-slate-800/80 flex items-center justify-center text-slate-500 text-2xl">
+                    <i class="fa-solid fa-folder-open"></i>
+                </div>
+                <h4 class="text-slate-300 font-semibold">Nincsenek feltöltött fájlok</h4>
+                <p class="text-slate-500 text-sm mt-1">Tölts fel fájlokat a fenti mező segítségével.</p>
+            </div>
+
+            <!-- Fájlok kártyás rácsa -->
+            <div id="fileGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+        </section>
+    </main>
+
+    <!-- Előnézet Modal -->
+    <div id="previewModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
+            <!-- Modal fejléc -->
+            <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+                <div class="flex items-center gap-3 overflow-hidden">
+                    <span id="modalFileIcon" class="text-xl text-blue-400"></span>
+                    <h3 id="modalFileName" class="font-semibold text-slate-200 truncate">Előnézet</h3>
+                </div>
+                <button onclick="closePreviewModal()" class="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <!-- Modal tartalom -->
+            <div id="modalContent" class="p-6 overflow-auto flex-1 flex items-center justify-center bg-slate-950/50 min-h-[300px]">
+                <!-- Dinamikus előnézeti tartalom kerül ide -->
+            </div>
+            <!-- Modal lábléc -->
+            <div class="p-4 border-t border-slate-800 flex items-center justify-between bg-slate-900/80">
+                <span id="modalFileInfo" class="text-xs text-slate-400"></span>
+                <a id="modalDownloadBtn" href="#" download class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-medium transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-download"></i> Letöltés
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Memóriában tárolt fájllista
+        let uploadedFiles = [];
+        let currentCategory = 'all';
+
+        // DOM elemek
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const folderInput = document.getElementById('folderInput');
+        const fileGrid = document.getElementById('fileGrid');
+        const emptyState = document.getElementById('emptyState');
+        const searchInput = document.getElementById('searchInput');
+        const sortSelect = document.getElementById('sortSelect');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const progressPercent = document.getElementById('progressPercent');
+
+        // Téma váltás
+        document.getElementById('themeToggle').addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            document.body.classList.toggle('bg-slate-900');
+            document.body.classList.toggle('bg-slate-100');
+            document.body.classList.toggle('text-slate-900');
+            document.body.classList.toggle('text-slate-100');
+        });
+
+        // Event listener-ek a fájl kiválasztáshoz
+        fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+        folderInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+        // Drag and Drop események
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.classList.add('border-blue-500', 'bg-blue-500/10');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.classList.remove('border-blue-500', 'bg-blue-500/10');
+            }, false);
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        });
+
+        // Fájlok feldolgozása szimulált feltöltési csíkkal
+        function handleFiles(files) {
+            if (!files || files.length === 0) return;
+
+            const newFiles = Array.from(files);
+            progressContainer.classList.remove('hidden');
+            let progress = 0;
+
+            const interval = setInterval(() => {
+                progress += 15;
+                if (progress > 100) progress = 100;
+
+                progressBar.style.width = progress + '%';
+                progressPercent.textContent = progress + '%';
+
+                if (progress === 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        progressContainer.classList.add('hidden');
+                        progressBar.style.width = '0%';
+
+                        // Fájlok hozzáadása az állapothoz
+                        newFiles.forEach(file => {
+                            const fileObj = {
+                                id: 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                                nativeFile: file,
+                                name: file.name,
+                                size: file.size,
+                                type: getCategoryFromType(file.type, file.name),
+                                extension: file.name.split('.').pop().toLowerCase(),
+                                objectUrl: URL.createObjectURL(file),
+                                date: new Date()
+                            };
+                            uploadedFiles.push(fileObj);
+                        });
+
+                        updateUI();
+                    }, 400);
+                }
+            }, 50);
+        }
+
+        // Fájl kategória meghatározása
+        function getCategoryFromType(mimeType, filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            if (mimeType.startsWith('image/') || ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'].includes(ext)) return 'image';
+            if (mimeType.startsWith('video/') || mimeType.startsWith('audio/') || ['mp4', 'mp3', 'wav', 'webm', 'ogg'].includes(ext)) return 'media';
+            if (['pdf', 'doc', 'docx', 'txt', 'xls', 'xlsx', 'ppt', 'pptx', 'odt', 'rtf'].includes(ext)) return 'doc';
+            return 'other';
+        }
+
+        // FontAwesome ikon kiválasztása kiterjesztés alapján
+        function getFileIconClass(ext, category) {
+            switch(ext) {
+                case 'pdf': return 'fa-solid fa-file-pdf text-red-500';
+                case 'doc': case 'docx': return 'fa-solid fa-file-word text-blue-500';
+                case 'xls': case 'xlsx': return 'fa-solid fa-file-excel text-emerald-500';
+                case 'ppt': case 'pptx': return 'fa-solid fa-file-powerpoint text-orange-500';
+                case 'zip': case 'rar': case '7z': case 'tar': return 'fa-solid fa-file-zipper text-amber-500';
+                case 'js': case 'html': case 'css': case 'json': case 'py': case 'cpp': return 'fa-solid fa-file-code text-indigo-400';
+                case 'mp3': case 'wav': case 'ogg': return 'fa-solid fa-file-audio text-purple-400';
+                case 'mp4': case 'webm': case 'avi': return 'fa-solid fa-file-video text-rose-400';
+                case 'jpg': case 'jpeg': case 'png': case 'gif': case 'svg': case 'webp': return 'fa-solid fa-file-image text-cyan-400';
+                default: return 'fa-solid fa-file text-slate-400';
+            }
+        }
+
+        // Fájlméret formázása (B, KB, MB, GB)
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // UI Frissítése (statisztikák, fájlok megjelenítése)
+        function updateUI() {
+            renderStats();
+            renderFileList();
+        }
+
+        function renderStats() {
+            document.getElementById('statTotalFiles').textContent = uploadedFiles.length + ' db';
+            const totalBytes = uploadedFiles.reduce((acc, f) => acc + f.size, 0);
+            document.getElementById('statTotalSize').textContent = formatBytes(totalBytes);
+            document.getElementById('statMediaCount').textContent = uploadedFiles.filter(f => f.type === 'media' || f.type === 'image').length + ' db';
+            document.getElementById('statDocCount').textContent = uploadedFiles.filter(f => f.type === 'doc').length + ' db';
+        }
+
+        function renderFileList() {
+            // Szűrés kategóriára
+            let filtered = uploadedFiles.filter(f => {
+                if (currentCategory === 'all') return true;
+                return f.type === currentCategory;
+            });
+
+            // Szűrés kereső kifejezésre
+            const searchVal = searchInput.value.toLowerCase().trim();
+            if (searchVal) {
+                filtered = filtered.filter(f => f.name.toLowerCase().includes(searchVal));
+            }
+
+            // Rendezés
+            const sortVal = sortSelect.value;
+            filtered.sort((a, b) => {
+                if (sortVal === 'date-desc') return b.date - a.date;
+                if (sortVal === 'date-asc') return a.date - b.date;
+                if (sortVal === 'name-asc') return a.name.localeCompare(b.name);
+                if (sortVal === 'name-desc') return b.name.localeCompare(a.name);
+                if (sortVal === 'size-desc') return b.size - a.size;
+                if (sortVal === 'size-asc') return a.size - b.size;
+                return 0;
+            });
+
+            // Üres állapot kezelése
+            if (filtered.length === 0) {
+                fileGrid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            fileGrid.innerHTML = filtered.map(file => {
+                const iconClass = getFileIconClass(file.extension, file.type);
+                const isImage = file.type === 'image';
+
+                return `
+                <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-500 transition-all group relative">
+                    <div>
+                        <!-- Bélyegkép vagy Ikon -->
+                        <div class="h-32 rounded-xl bg-slate-900/80 flex items-center justify-center overflow-hidden mb-3 relative group-hover:bg-slate-900 transition-colors">
+                            ${isImage ? 
+                                `<img src="${file.objectUrl}" alt="${file.name}" class="w-full h-full object-cover">` : 
+                                `<i class="${iconClass} text-4xl"></i>`
+                            }
+                            <button onclick="openPreviewModal('${file.id}')" class="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-sm font-medium transition-opacity gap-2">
+                                <i class="fa-solid fa-eye"></i> Előnézet
+                            </button>
+                        </div>
+
+                        <!-- Fájl attribútumok -->
+                        <h4 class="font-medium text-sm text-slate-200 truncate" title="${file.name}">${file.name}</h4>
+                        <div class="flex items-center justify-between text-xs text-slate-400 mt-1">
+                            <span>${formatBytes(file.size)}</span>
+                            <span>${file.date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                        </div>
+                    </div>
+
+                    <!-- Akció gombok -->
+                    <div class="flex items-center justify-between gap-2 mt-4 pt-3 border-t border-slate-700/50">
+                        <a href="${file.objectUrl}" download="${file.name}" class="flex-1 py-1.5 px-3 bg-blue-600/10 hover:bg-blue-600 text-blue-400 hover:text-white rounded-lg text-xs font-medium text-center transition-colors flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-download"></i> Letöltés
+                        </a>
+                        <button onclick="deleteFile('${file.id}')" class="p-1.5 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-rose-500/10 transition-colors" title="Fájl törlése">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        // Fájl törlése
+        function deleteFile(id) {
+            const index = uploadedFiles.findIndex(f => f.id === id);
+            if (index !== -1) {
+                URL.revokeObjectURL(uploadedFiles[index].objectUrl);
+                uploadedFiles.splice(index, 1);
+                updateUI();
+            }
+        }
+
+        // Modal előnézet megnyitása
+        function openPreviewModal(id) {
+            const file = uploadedFiles.find(f => f.id === id);
+            if (!file) return;
+
+            const modal = document.getElementById('previewModal');
+            const modalFileName = document.getElementById('modalFileName');
+            const modalFileInfo = document.getElementById('modalFileInfo');
+            const modalContent = document.getElementById('modalContent');
+            const modalDownloadBtn = document.getElementById('modalDownloadBtn');
+            const modalFileIcon = document.getElementById('modalFileIcon');
+
+            modalFileName.textContent = file.name;
+            modalFileInfo.textContent = `${formatBytes(file.size)} • ${file.date.toLocaleString('hu-HU')}`;
+            modalDownloadBtn.href = file.objectUrl;
+            modalDownloadBtn.download = file.name;
+            modalFileIcon.className = getFileIconClass(file.extension, file.type);
+
+            modalContent.innerHTML = '';
+
+            // Előnézet generálása típus szerint
+            if (file.type === 'image') {
+                modalContent.innerHTML = `<img src="${file.objectUrl}" class="max-h-[60vh] max-w-full object-contain rounded-lg shadow-lg">`;
+            } else if (file.nativeFile.type.startsWith('video/')) {
+                modalContent.innerHTML = `<video controls src="${file.objectUrl}" class="max-h-[60vh] w-full rounded-lg"></video>`;
+            } else if (file.nativeFile.type.startsWith('audio/')) {
+                modalContent.innerHTML = `<audio controls src="${file.objectUrl}" class="w-full max-w-md"></audio>`;
+            } else if (file.extension === 'txt' || file.nativeFile.type.startsWith('text/')) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    modalContent.innerHTML = `<pre class="bg-slate-900 p-4 rounded-xl text-xs text-slate-300 overflow-auto max-h-[50vh] w-full font-mono border border-slate-800">${escapeHtml(e.target.result)}</pre>`;
+                };
+                reader.readAsText(file.nativeFile);
+            } else {
+                modalContent.innerHTML = `
+                    <div class="text-center p-8">
+                        <i class="${getFileIconClass(file.extension, file.type)} text-6xl mb-4"></i>
+                        <p class="text-slate-300 text-sm font-medium">Ehhez a fájltípushoz nem érhető el közvetlen előnézet.</p>
+                        <p class="text-slate-500 text-xs mt-1">Kattints a letöltés gombra a fájl megtekintéséhez.</p>
+                    </div>
+                `;
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closePreviewModal() {
+            document.getElementById('previewModal').classList.add('hidden');
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        // Kategóriagombok eseményei
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.category-btn').forEach(b => {
+                    b.classList.remove('bg-blue-600', 'text-white');
+                    b.classList.add('bg-slate-800', 'text-slate-300');
+                });
+                e.target.classList.remove('bg-slate-800', 'text-slate-300');
+                e.target.classList.add('bg-blue-600', 'text-white');
+
+                currentCategory = e.target.getAttribute('data-category');
+                renderFileList();
+            });
+        });
+
+        // Kereső és Rendezés események
+        searchInput.addEventListener('input', renderFileList);
+        sortSelect.addEventListener('change', renderFileList);
+    </script>
+</body>
+</html>
